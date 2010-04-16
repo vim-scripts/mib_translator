@@ -27,6 +27,9 @@
 "   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 "
 " CHANGELOG:
+"   0.0.4, 2010-04-12
+"     - Fixed: If the opened buffer is deleted by hand, that raised an error
+"       when the buffer is opened again.
 "   0.0.3, 2010-04-12
 "     - Fixed: Opened buffer remained unmodifiable for the second run.
 "   0.0.2, 2010-04-12
@@ -169,7 +172,10 @@ function! s:DeleteOidTranslatorBuffer()
     let OidTranslatorBufferNumber = s:GetOidTranslatorBufferNumber()
     if OidTranslatorBufferNumber != -1
         " If the buffer exists, delete it.
-        exec 'bdelete ' . g:OidTranslatorBufferName
+        " If the buffer is deleted by hand using ':bd' the following
+        " exec used to raise an error. Now launched with 'silent!'.
+        " exec 'bdelete ' . g:OidTranslatorBufferName
+        silent! exec 'bdelete ' . g:OidTranslatorBufferName
     endif
 endfunction
 
