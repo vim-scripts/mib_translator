@@ -27,6 +27,12 @@
 "   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 "
 " CHANGELOG:
+"   0.0.2, 2010-04-12
+"     - The opened buffer is colored with MIB file syntax,
+"       making it more readable.
+"     - The opened buffer is not modifiable from now on.
+"     - Made it more compatible with other plugins,
+"       the functions starts with 's:'.
 "   0.0.1, 2009-12-04
 "     - First version with forward and reverse OID translation.
 "
@@ -40,6 +46,7 @@
 "     Also, it can be used from anywhere since it has actually
 "     nothing to do with the file extension, so it is better to
 "     place it in the plugin directory instead of ftplugin.
+"     For example, you can use it from a .py file too.
 "
 " COMMANDS:
 "   :OidReverseTranslate <oidName>
@@ -102,29 +109,42 @@
 "     path in Windows.
 
 
-if exists('g:OidTranslatorBufferName') == 0
-    " The name of the buffer to be used to display the
-    " result of the translation process.
-    " It is not recommended to change this value or
-    " you will cause buffer name clashes, or the plugin itself
-    " can not find the buffer.
-    let g:OidTranslatorBufferName = 'OIDTranslator'
-endif
-
-if exists('g:OidTranslatorBufferSize') == 0
-    " The line count of the translation buffer.
-    " If it is not convenient for you, change it
-    " from within VIMRC by copying the following line.
-    let g:OidTranslatorBufferSize = 10
-endif
-
-if exists('g:SnmpTranslatePath') == 0
-    " The path to the snmptranslate executable of Net-SNMP.
-    let g:SnmpTranslatePath = 'snmptranslate'
+if exists("g:loaded_mib_translator") || &cp
+    " If it already loaded, do not load it again.
+    finish
 endif
 
 
-function! GetOidTranslatorBufferNumber()
+let g:loaded_mib_translator = 1
+
+
+function! s:SetDefaultSettings()
+    " Reads the settings, if they are not defined,
+    " it defines them with default settings.
+    if exists('g:OidTranslatorBufferName') == 0
+        " The name of the buffer to be used to display the
+        " result of the translation process.
+        " It is not recommended to change this value or
+        " you will cause buffer name clashes, or the plugin itself
+        " can not find the buffer.
+        let g:OidTranslatorBufferName = 'OIDTranslator'
+    endif
+
+    if exists('g:OidTranslatorBufferSize') == 0
+        " The line count of the translation buffer.
+        " If it is not convenient for you, change it
+        " from within VIMRC by copying the following line.
+        let g:OidTranslatorBufferSize = 10
+    endif
+
+    if exists('g:SnmpTranslatePath') == 0
+        " The path to the snmptranslate executable of Net-SNMP.
+        let g:SnmpTranslatePath = 'snmptranslate'
+    endif
+endfunction
+
+
+function! s:GetOidTranslatorBufferNumber()
     " Returns the buffer number of the OID Translator.
     " It can also be used to check if the buffer exists
     " or not. If this function returns -1, it means that
@@ -133,18 +153,18 @@ function! GetOidTranslatorBufferNumber()
 endfunction
 
 
-function! CreateOidTranslatorBuffer()
+function! s:CreateOidTranslatorBuffer()
     " Creates the OID Tranlator buffer.
     " The buffer must be deleted by calling
     " DeleteOidTranslatorBuffer() before this function.
-    call CreateBuffer(g:OidTranslatorBufferName, g:OidTranslatorBufferSize)
+    call s:CreateBuffer(g:OidTranslatorBufferName, g:OidTranslatorBufferSize)
 endfunction
 
 
-function! DeleteOidTranslatorBuffer()
+function! s:DeleteOidTranslatorBuffer()
     " If the OID Translator buffer exists, this function deletes it.
     " It has no effect otherwise.
-    let OidTranslatorBufferNumber = GetOidTranslatorBufferNumber()
+    let OidTranslatorBufferNumber = s:GetOidTranslatorBufferNumber()
     if OidTranslatorBufferNumber != -1
         " If the buffer exists, delete it.
         exec 'bdelete ' . g:OidTranslatorBufferName
@@ -152,7 +172,7 @@ function! DeleteOidTranslatorBuffer()
 endfunction
 
 
-function! CreateBuffer(bufferName, splitSize)
+function! s:CreateBuffer(bufferName, splitSize)
     " Create the specified buffer name with the specified split size.
     " This is a more generic function and can be used for
     " other scripts too.
@@ -185,10 +205,10 @@ function! CreateBuffer(bufferName, splitSize)
     " When on spell checking will be done.
     setlocal nospell
 
-    "Do not print the line number in front of each line.
+    " Do not print the line number in front of each line.
     setlocal nonumber
 
-    "Remove all abbreviations for Insert mode
+    " Remove all abbreviations for Insert mode
     iabc <buffer>
 
     " Highlight the screen line of the cursor with CursorLine.
@@ -196,15 +216,15 @@ function! CreateBuffer(bufferName, splitSize)
 endfunction
 
 
-function! ReverseTranslateSnmpOID(oidName)
+function! s:ReverseTranslateSnmpOID(oidName)
     " Reverse translates the given SNMP OID.
     " This is the reverse translation, the OID information
     " is found from the OID name.
     " The oidName is a string like 'nlmConfigLogStorageType'.
     " This function uses snmptranslate command of Net-SNMP,
     " and returns extracts detailed information.
-    call DeleteOidTranslatorBuffer()
-    call CreateOidTranslatorBuffer()
+    call s:DeleteOidTranslatorBuffer()
+    call s:CreateOidTranslatorBuffer()
     " At this point, we have a buffer for sure.
 
     " Focus the OID Translator buffer.
@@ -222,18 +242,19 @@ function! ReverseTranslateSnmpOID(oidName)
     " -Td    : Prints full details of the given OID.
     let parameters = '-m ALL -IR -On -Td'
     silent! exec 'read !' . g:SnmpTranslatePath . ' ' . parameters . ' ' . a:oidName
+    call s:DoPostOperations()
 endfunction
 
 
-function! TranslateSnmpOID(oidNumber)
+function! s:TranslateSnmpOID(oidNumber)
     " Translates the given SNMP OID.
     " This is the forward translation, the OID information
     " is found from the OID number.
     " The oidName is a string like '.1.1.3'.
     " This function uses snmptranslate command of Net-SNMP,
     " and returns extracts detailed information.
-    call DeleteOidTranslatorBuffer()
-    call CreateOidTranslatorBuffer()
+    call s:DeleteOidTranslatorBuffer()
+    call s:CreateOidTranslatorBuffer()
     " At this point, we have a buffer for sure.
 
     " Focus the OID Translator buffer.
@@ -250,9 +271,26 @@ function! TranslateSnmpOID(oidNumber)
     " -Td    : Prints full details of the given OID.
     let parameters = '-m ALL -On -Td'
     silent! exec 'read !' . g:SnmpTranslatePath . ' ' . parameters . ' ' . a:oidNumber
+    call s:DoPostOperations()
 endfunction
 
-" Define commands to use.
-command! -nargs=1 OidReverseTranslate : call ReverseTranslateSnmpOID(<q-args>)
-command! -nargs=1 OidTranslate : call TranslateSnmpOID(<q-args>)
 
+function! s:DoPostOperations()
+    " This function is called at the end of ReverseTranslateSnmpOID() and
+    " TranslateSnmpOID().
+
+    " What is seen is a part of a MIB file, paint it with its syntax colors.
+    exec "set filetype=mib"
+
+    " When off the buffer contents cannot be changed.
+    set nomodifiable
+endfunction
+
+
+" Set the settings once.
+call s:SetDefaultSettings()
+
+
+" Define commands to use.
+command! -nargs=1 OidReverseTranslate : call s:ReverseTranslateSnmpOID(<q-args>)
+command! -nargs=1 OidTranslate : call s:TranslateSnmpOID(<q-args>)
