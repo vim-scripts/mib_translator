@@ -27,6 +27,8 @@
 "   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 "
 " CHANGELOG:
+"   0.0.3, 2010-04-12
+"     - Fixed: Opened buffer remained unmodifiable for the second run.
 "   0.0.2, 2010-04-12
 "     - The opened buffer is colored with MIB file syntax,
 "       making it more readable.
@@ -180,6 +182,9 @@ function! s:CreateBuffer(bufferName, splitSize)
     let finalBufferName = a:bufferName
     exec a:splitSize . 'new "' . finalBufferName . '"'
     exec 'edit ' . finalBufferName
+
+    " Make the buffer writable.
+    set modifiable
 
     " Keep the window width when windows are opened or closed.
     " setlocal winfixwidth
