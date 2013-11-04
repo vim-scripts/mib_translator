@@ -1,93 +1,13 @@
 This is a mirror of http://www.vim.org/scripts/script.php?script_id=2881
 
-FILE: mib_translator.vim
-Vim plugin
+mib_translator.vim
+Translates SNMP OIDs within Vim using Net-SNMP's snmptranslate command.
+It can display the OID of a label, or a label of an OID whether it is a comment, or a string literal in your code.
 
-This plugin allows you to translate the SNMP OIDs from within Vim.
+For screenshots and documentation, please see the homepage.
 
-Screenshot for version 0.0.3:
-http://dl.dropbox.com/u/3027364/mib_translator/mib_translator0.0.3_a.png
+Home page: https://github.com/caglartoklu/mib_translator.vim
 
-You can see a screenshot of the plugin(0.0.1, uncolored unlike the newer ones) in the following link.
-http://caglartoklu.blogspot.com/2009/12/snmp-oid-translator-plugin-for-vim.html
-
-AUTHOR:
-  Caglar Toklu caglartoklu[aat]gmail.com
-  http://caglartoklu.blogspot.com/
-
-LICENSE:
-  Copyright (C) 2009  Caglar Toklu
-
-  This program is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
-
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
-
-  You should have received a copy of the GNU General Public License
-  along with this program.  If not, see http://www.gnu.org/licenses/.
-
-CHANGELOG:
-0.0.4, 2010-04-12
-- Fixed: If the opened buffer is deleted by hand, that raised an error when the buffer is opened again.
-0.0.3, 2010-04-12
-- Fixed: Opened buffer remained unmodifiable for the second run.
-0.0.2, 2010-04-12
-- The opened buffer is colored with MIB file syntax, making it more readable.
-- The opened buffer is not modifiable from now on.
-- Made it more compatible with other plugins, the functions starts with 's:'.
-0.0.1, 2009-12-04
-- First version with forward and reverse OID translation
-
-COMMANDS:
-  :OidReverseTranslate <oidName>
-    Displays the OID information if the OID name is given. This is the reverse translation.
-    :OidReverseTranslate ipv6MIB
-  :OidTranslate <oidNumber>
-    Displays the OID information if the OID number is given. This is the forward translation.
-    :OidTranslate .1.3.6.1.2.1.55
-
-USAGE:
-  You can use the plugin as the COMMANDS section shows.
-  Note that you do not have to open a MIB file to use this plugin.
-  It will work anyway, but if you open a MIB file, you can use as:
-    1. Get the cursor to a OID name, for example ipv6MIB.
-    2. Type : to get to command mode.
-    3. Type OidReverseTranslate
-    4. Type <space>
-    5. Type <C-r> <C-w>
-    6. Press <enter>
-
-
-CONFIGURATION:
-  The options are:
-
-  g:OidTranslatorBufferName:
-    The name of the MIB translator buffer.
-    The tranlated values will be displayed here.
-    There is no need to change this if there are no clash with another plugin.
-    Default is 'OIDTranslator'.
-
-  g:OidTranslatorBufferSize:
-    The size of the buffer. It is the line count. If your screen is small, you can reduce the this size, or if your screen is huge, you can raise this number.
-    Default is 10.
-
-  g:SnmpTranslatePath:
-    The executable path of the snmptranslate command of Net-SNMP.
-    If the bin folder is in your path, no need to change this setting.
-    If it is not, set this option from your VIMRC.
-    The value must the path to the executable, not the directory including the executable.
-    For example, a valid value is:
-    let g:SnmpTranslatePath = 'C:\\usr\\bin\\snmptranslate.exe'
-    The default value is 'snmptranslate', so that it can directly run without modification if snmptranslate is included in a directory on path.
-    Note that if Net-SNMP is not on the path, even though you define this option correct, snmptranslate itself can have difficulties to find the MIB files, so it is recommended to keep it on the path and not changing this option.
-
-REQUIREMENTS:
-  - Net-SNMP package must be installed on your system.
-    http://net-snmp.sourceforge.net/
-    It is also strongly recommended to add 'C:\usr\bin' to the path in Windows.
-
+The development is completely moved to Github.
+For documentation and screenshot, please visit the homepage link.
+Functionality changes will still be reflected to Vim.org page.
